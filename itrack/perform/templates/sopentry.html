@@ -1,0 +1,385 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+{# block title %}SOPs/Policies Entry View{% endblock #}
+{% if missions_list is not None %}
+<!-- Begin page content -->
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h4>SOPs/Policies Entry</h4>
+            </div>
+            <div class="col-1">
+                <button class='btn btn-default pull-right' id='tobottom-button' data-toggle='tooltip' title='Scroll to the bottom'><i class="fa fa-angle-double-down" aria-hidden="true"></i></button>
+            </div>
+        </div>
+        <hr />
+        <div class="">
+            <form id="selection-form">
+                <div class="form-group">
+                    <label for="mission_selector">Select mission:</label>
+                    <select class="form-control" id="mission_selector">
+                        {% for one_item in missions_list %}
+                            <option value="{{ one_item.mid }}">
+                            {{ one_item.mission_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+
+                    <!--label for="country_selector">Select country:</label>
+                    <select class="form-control" id="country_selector">
+                        {% for key, value in keys_country.items %}
+                            <option value="{{ key }}">
+                            {{ value }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="location_selector">Select location:</label>
+                    <select class="form-control" id="location_selector">
+                        {% for key, value in keys_location.items %}
+                            <option value="{{ key }}">
+                            {{ value }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="attack_context_selector">Select attack context:</label>
+                    <select class="form-control" id="attack_context_selector">
+                        {% for key, value in keys_attack_context.items %}
+                            <option value="{{ key }}">
+                            {{ value }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="means_of_attack_selector">Select means of attack:</label>
+                    <select class="form-control" id="means_of_attack_selector">
+                        {% for key, value in keys_means_of_attack.items %}
+                            <option value="{{ key }}">
+                            {{ value }}
+                            </option>
+                        {% endfor %}
+                    </select-->
+
+
+                    <!--select id="team_selector">
+                        {% for one_item in teams_list %}
+                            <option value="{{ one_item.tid }}">
+                            {{ one_item.team_name }}
+                            </option>
+                        {% endfor %}
+                    </select-->
+                </div>
+                <input class='btn btn-primary' type="button" value="Search" id="selection-button" method="GET">
+            </form>
+        </div>
+        <hr />
+        <form id="sending-form" data-toggle="validator" role="form">
+            <div id="sending-form-content">
+                <div id="nodata_div" style="width: 100%; text-align:center;">No data to show!</div>
+              <!-- Nav tabs -->
+                <ul class="nav nav-tabs" role="tablist" style="display: none;">
+                {% for ikey, ivalue in keys_sop_policies_implementation_stage.items %}
+                    {% for dkey, dvalue in keys_sop_policies_ds_level.items %}
+                    <li id="{{ ikey }}{{ dkey }}TabTitle" class="nav-item" style="display: none;">
+                        <a class="nav-link{% if forloop.parentloop.first and forloop.first %}{{ ' active' }}{% endif %}" data-toggle="tab" href="#{{ ikey }}{{ dkey }}Tab">{{ ivalue }} {{ dvalue }} SOPs/Policies</a>
+                    </li>
+                    {% endfor %}
+                {% endfor %}
+                </ul>
+
+                <!-- Tab panes -->
+                <div class="tab-content">
+                {% for ikey, ivalue in keys_sop_policies_implementation_stage.items %}
+                    {% for dkey, dvalue in keys_sop_policies_ds_level.items %}
+                    <div id="{{ ikey }}{{ dkey }}Tab" class="container tab-pane{% if forloop.parentloop.first and forloop.first %}{{ ' active' }}{% endif %}"><br>
+                        <div role="tablist">
+                        {% for tkey, tvalue in keys_sop_policies_tag.items %}
+                            <div id="{{ ikey }}{{ dkey }}TabTag{{ tkey }}Card" class="card" style="display: none;">
+                                <div class="card-header" role="tab" ><a class="card-title">{{ tvalue }}</a></div>
+                                <div class="collapse show" role="tabpanel">
+                                    <div id="{{ ikey }}{{ dkey }}TabTag{{ tkey }}CardBody" class="card-body"></div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+                </div>
+            </div>
+            <hr />
+            <div class="row">
+                <div id="sending-form-buttons" class="col">
+                    <input class='btn btn-primary' type="button" value="Send" id="sending-button" method="GET" disabled>
+                    <input class='btn btn-primary' type="button" value="reset" id="reset-button" disabled>
+                    <input class='btn btn-primary' type="button" value="Cancel" id="cancel-button" disabled>
+                </div>
+                <div class="col-1">
+                    <button class='btn btn-default pull-right' id='totop-button' data-toggle='tooltip' title='Scroll to the top'><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+                </div>
+            </div>
+
+        </form>
+        <hr />
+
+    </div>
+
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.13/d3.min.js"></script>
+    <script type="text/javascript">
+        //var divClone = ''
+        Date.prototype.toDateInputValue = (function() {
+            var local = new Date(this);
+            local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+            return local.toJSON().slice(0,10);
+        });
+        $(document).ready( function() {
+            //divClone = $("#sending-form-content").clone(); // Do this on $(document).ready(function() { ... })
+            $('#sending-form-content').data('old-state', $('#sending-form-content').html());
+
+            //$('.input-group.date').datepicker({format: "dd.mm.yyyy"});
+            //$('#start_date').val(new Date().toDateInputValue());
+            //$('#end_date').val(new Date().toDateInputValue());
+            //$('#sending-form').validator()
+        });
+
+        function checkPrerequesits(prerequesitsVector,_this){
+            myId = $(_this).attr('id');
+            myIdNum = parseInt(myId.match(/\d+$/)[0], 10);
+
+            elem = null;
+            msg = '<ul>';
+            prerequisitesMet = 0;
+
+            if (_this.checked == true) {
+                //I am not checked, I want to be checked
+                for (var i = 0; i < prerequesitsVector.length; i++) {
+                    elem = document.getElementById('Chkbx'+prerequesitsVector[i]);
+                    if (elem.checked) {
+                        prerequisitesMet++;
+                    } else {
+                        elemId = $(elem).attr('id');
+                        //msg += '<li>'+$(elem).parent().text().trim()+'</li>';
+                        ////msg += '<li>\“<a onmousedown="highlightON(\''+ elemId +'\')" onmouseout="highlightOFF(\''+ elemId +'\')"><b>'+$(elem).parent().text().trim()+'</b></a>\”</li>';
+                        msg += '<li>\“<a onmousedown="highlightON(\''+ elemId +'\')" onmouseout="highlightOFF(\''+ elemId +'\')"><b>'+$(elem).parent().text().trim().substring(0,20)+'...'+'</b></a>\”</li>';
+                    }
+                }
+                msg += '</ul>';
+                if (prerequisitesMet == prerequesitsVector.length) {
+                    // prerequisites are met
+
+                    for (var i = 0; i < prerequesitsVector.length; i++) {
+                        elem = document.getElementById('Chkbx'+prerequesitsVector[i]);
+                        //elem.setAttribute("data-dependent",parseInt(elem.getAttribute("data-dependent"))+1)
+                        xArr = elem.getAttribute("data-dependent").split(",").map(Number).filter(Boolean);
+                        elem.setAttribute("data-dependent",_.union(xArr, [myIdNum]).toString());
+                        //_.union([2,3], [2]);
+                    }
+
+                } else {
+                    // prerequisites are not met
+                    //alert("Prerequisites SOPs/Policies are not met!\n"+msg);
+                    //document.getElementById("alert-msg").innerHTML = '<div name="alert-msg" id="alert-msg" class="alert alert-danger" role="alert"><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span><span class="sr-only">Error:</span><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button> <p>Prerequisites SOPs/Policies are not met!<br />'+msg+'</p></div>';
+                    //$('#alert-msg').hide();
+                    //$('#alert-msg').show(1000);
+                    ////showToast(3, 'The following prerequisites SOPs/Policies for \“<a onmousedown="highlightON(\''+ myId +'\')" onmouseout="highlightOFF(\''+ myId +'\')"><b>'+$(_this).parent().text().trim()+'</b></a>\” are not checked:<br />'+msg, 'toast-top-right');
+                    showToast(3, 'The following prerequisites SOPs/Policies for \“<a onmousedown="highlightON(\''+ myId +'\')" onmouseout="highlightOFF(\''+ myId +'\')"><b>'+$(_this).parent().text().trim().substring(0,20)+'...'+'</b></a>\” are not checked:<br />'+msg, 'toast-top-right');
+
+                    _this.checked = false;
+                }
+
+
+            } else {
+                //I am checked, I want to be unchecked
+
+                if (_this.getAttribute("data-dependent") == 0) {
+                    //  You can uncheck me
+
+                    for (var i = 0; i < prerequesitsVector.length; i++) {
+                        elem = document.getElementById('Chkbx'+prerequesitsVector[i]);
+                        xArr = elem.getAttribute("data-dependent").split(",").map(Number).filter(Boolean);
+
+                        //elem.setAttribute("data-dependent",parseInt(elem.getAttribute("data-dependent"))-1)
+                        elem.setAttribute("data-dependent",_.without(xArr, myIdNum).toString());
+                         //_.without([2, 1, 2, 3], 1);
+                    }
+
+                } else {
+                    //  You cannot uncheck me
+                    dependentsVector = _this.getAttribute("data-dependent").split(",").map(Number).filter(Boolean);
+                    for (var i = 0; i < dependentsVector.length; i++) {
+                        elem = document.getElementById('Chkbx'+dependentsVector[i]);
+                        if (elem.checked) {
+                            elemId = $(elem).attr('id');
+                            //msg += '<li>'+$(elem).parent().text().trim()+'</li>';
+                            ////msg += '<li>\“<a onmousedown="highlightON(\''+ elemId +'\')" onmouseout="highlightOFF(\''+ elemId +'\')"><b>'+$(elem).parent().text().trim()+'</b></a>\”</li>';
+                            msg += '<li>\“<a onmousedown="highlightON(\''+ elemId +'\')" onmouseout="highlightOFF(\''+ elemId +'\')"><b>'+$(elem).parent().text().trim().substring(0,20)+'...'+'</b></a>\”</li>';
+                        }
+                    }
+                    msg += '</ul>';
+                    //alert('Dependent SOPs/Policies are checked!\n'+msg);
+                    //document.getElementById("alert-msg").innerHTML = '<div name="alert-msg" id="alert-msg" class="alert alert-danger" role="alert"><span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span><span class="sr-only">Error:</span><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">×</span></button> <p>Dependent SOPs/Policies are checked!<br />'+msg+'</p></div>';
+                    //$('#alert-msg').hide();
+                    //$('#alert-msg').show(1000);
+                    ////showToast(3, 'The following dependent SOPs/Policies for \“<a onmousedown="highlightON(\''+ myId +'\')" onmouseout="highlightOFF(\''+ myId +'\')"><b>'+$(_this).parent().text().trim()+'</b></a>\” are checked:<br />'+msg, 'toast-top-right');
+                    showToast(3, 'The following dependent SOPs/Policies for \“<a onmousedown="highlightON(\''+ myId +'\')" onmouseout="highlightOFF(\''+ myId +'\')"><b>'+$(_this).parent().text().trim().substring(0,20)+'...'+'</b></a>\” are checked:<br />'+msg, 'toast-top-right');
+
+                    _this.checked = true;
+                }
+            }
+        }
+    </script>
+    <script type="text/javascript">
+        $('#selection-button').click(function(event) {
+            $('#selection-form :input').prop('disabled', true);
+            $('#sending-form :input').prop('disabled', false);
+            event.preventDefault();
+            $('#pleaseWaitDialog').modal();
+            //var team_selected = $('#team_selector').find(":selected").val();
+
+            var mission_selected = $('#mission_selector').find(":selected").val();
+            var country_selected = $('#country_selector').find(":selected").val();
+            var location_selected = $('#location_selector').find(":selected").val();
+            var attack_context_selected = $('#attack_context_selector').find(":selected").val();
+            var means_of_attack_selected = $('#means_of_attack_selector').find(":selected").val();
+
+            //var start_date_selected = $('#start_date').val();
+            //var end_date_selected = $('#end_date').val();
+
+            $.ajax({
+                 url: "{% url 'sop_items_data' %}",
+                 method: 'GET',
+                 data : {
+                    'filter_mission': parseInt(mission_selected),
+                    'filter_country': country_selected,
+                    'filter_location': location_selected,
+                    'filter_attack_context': attack_context_selected,
+                    'filter_means_of_attack': means_of_attack_selected
+
+                 },
+                 success: function(response){
+                    $('#pleaseWaitDialog').modal('hide');
+                    //console.log(response)
+                    //$('#figure').html('');
+                    $('#nodata_div').hide();
+
+                    sops_policies_list=response;
+                    // add SOPs
+                    for (jdx in sops_policies_list) {
+                        one_sop_policy_tag = sops_policies_list[jdx].Tag;
+                        one_sop_policy_title = sops_policies_list[jdx].Measure_description;
+                        one_sop_policy_id = sops_policies_list[jdx].spid;
+                        one_sop_policy_Prerequesit_sop_policy = sops_policies_list[jdx].Prerequesit_sop_policy;
+                        one_sop_policy_Ds_level = sops_policies_list[jdx].Ds_level;
+                        one_sop_policy_Implementation_stage = sops_policies_list[jdx].Implementation_stage;
+                        DivStr ='<div class="form-check"><label class="form-check-label"><input data-dependent="" id="Chkbx'+one_sop_policy_id+'" name="Chkbx'+one_sop_policy_id+'" class="form-check-input" type="checkbox" onchange="checkPrerequesits(['+one_sop_policy_Prerequesit_sop_policy+'],this)">'+one_sop_policy_title+'</label></div>';
+                        //POTabTag1CardBody
+                        $('#'+one_sop_policy_Implementation_stage+one_sop_policy_Ds_level+'TabTag'+one_sop_policy_tag+'CardBody').append(DivStr);
+                        //console.log("DivStr: "+DivStr);
+                        //"{{ ikey }}{{ dkey }}TabTitle"
+                        $('#'+one_sop_policy_Implementation_stage+one_sop_policy_Ds_level+'TabTitle').show();
+                        $('#'+one_sop_policy_Implementation_stage+one_sop_policy_Ds_level+'TabTitle').parent().show();
+                        //$("#POTabTag2Card").show();
+                        $('#'+one_sop_policy_Implementation_stage+one_sop_policy_Ds_level+'TabTag'+one_sop_policy_tag+'Card').show();
+                        $('#'+one_sop_policy_Implementation_stage+one_sop_policy_Ds_level+'TabTag'+one_sop_policy_tag+'Card').parent().show();
+
+                    }
+
+                 },
+                 error: function(xhr, errmsg, err){
+                     $('#pleaseWaitDialog').modal('hide');
+                     console.log("error");
+                     console.log(xhr.responseJSON.error);
+                     //alertFn(xhr.responseJSON.error, false);
+                     showToast(2, xhr.responseJSON.error, "toast-top-center");
+                     console.log(errmsg);
+                     console.log(err);
+                 }
+            })
+        });
+
+        $('#cancel-button').click(function(event) {
+            event.preventDefault();
+            $('#sending-form-buttons :input').prop('disabled', true);
+            $('#selection-form :input').prop('disabled', false);
+            toastr.clear();
+            //$('#tHead').html('');
+            //$('#tBody').html('');
+            /*CLONE*/
+            //Use this command if you want to keep divClone as a copy of "#some_div"
+            //$("#sending-form-content").replaceWith(divClone.clone()); // Restore element with a copy of divClone
+            $('#sending-form-content').html($('#sending-form-content').data('old-state'));
+
+        });
+
+        $('#reset-button').click(function(event) {
+            event.preventDefault();
+            toastr.clear();
+            $("#sending-form :input:checkbox").each(function() {
+                this.checked=false;
+            });
+        });
+
+        $('#sending-button').click(function(event) {
+            event.preventDefault();
+            toastr.clear();
+            //var team_selected = $('#team_selector').find(":selected").val();
+
+            var mission_selected = $('#mission_selector').find(":selected").val();
+            var country_selected = $('#country_selector').find(":selected").val();
+            var location_selected = $('#location_selector').find(":selected").val();
+            var attack_context_selected = $('#attack_context_selector').find(":selected").val();
+            var means_of_attack_selected = $('#means_of_attack_selector').find(":selected").val();
+
+
+            QuestAnswer={};
+            //checkedCheckboxes=$("form#sending-form input:checkbox:checked");
+            checkedCheckboxes=$("form#sending-form input:checkbox:checked");
+            for(i=0;i<checkedCheckboxes.length;i++) {
+                //console.log( index + ": " + $( this ).value + "name: " +$( this ).name);
+                QuestAnswer[checkedCheckboxes[i].name.slice(5)]=checkedCheckboxes[i].checked;
+            };
+
+
+            $.ajax({
+                 url: "{% url 'sop_entry_data' %}",
+                 method: 'GET',
+                 data : {
+                    'filter_mission': parseInt(mission_selected),
+                    'filter_country': country_selected,
+                    'filter_location': location_selected,
+                    'filter_attack_context': attack_context_selected,
+                    'filter_means_of_attack': means_of_attack_selected,
+                    'questions_answers': JSON.stringify(QuestAnswer)
+
+                 },
+                 success: function(data){
+                    console.log(data)
+                    $('#sending-form :input').prop('disabled', true);
+                    $('#selection-form :input').prop('disabled', false);
+
+                    //$('#tHead').html('');
+                    //$('#tBody').html('');
+                    /*CLONE*/
+                    //Use this command if you want to keep divClone as a copy of "#some_div"
+                    //$("#sending-form-content").replaceWith(divClone.clone()); // Restore element with a copy of divClone
+                    $('#sending-form-content').html($('#sending-form-content').data('old-state'));
+
+                    //alertFn("SOPs/Policies survey entery completed successfully!", true);
+                    showToast(1, "SOPs/Policies survey entery completed successfully!", "toast-top-center");
+
+                 },
+                 error: function(xhr, errmsg, err){
+                     console.log("error");
+                     //alertFn(xhr.responseJSON.error, false);
+                     console.log(errmsg);
+                     console.log(err);
+                 }
+            })
+        });
+
+
+
+    </script>
+{% else %}
+<p>You are not the leader of any mission.</p>
+{% endif %}
+{% endblock %}

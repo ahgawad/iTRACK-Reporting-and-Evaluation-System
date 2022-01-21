@@ -1,0 +1,473 @@
+{% load static from staticfiles %}
+
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <meta name="description" content="">
+        <meta name="author" content="">
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <!--script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-beta/js/bootstrap.min.js"></script-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/js/toastr.min.js"></script>
+        <!--script src="https://cdnjs.cloudflare.com/ajax/libs/lodash.js/4.17.4/lodash.min.js"></script-->
+        <!--script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/js/bootstrap-datepicker.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.blockUI/2.70/jquery.blockUI.min.js" type="text/javascript"></script-->
+        <!--website icon Start-->
+        <link rel="apple-touch-icon" sizes="180x180" href="{% static "favicon/apple-touch-icon.png" %}">
+        <link rel="icon" type="image/png" sizes="32x32" href="{% static "favicon/favicon-32x32.png" %}">
+        <link rel="icon" type="image/png" sizes="16x16" href="{% static "favicon/favicon-16x16.png" %}">
+        <link rel="manifest" href="{% static "favicon/manifest.json" %}">
+        <link rel="mask-icon" href="{% static "favicon/safari-pinned-tab.svg" %}" color="#5bbad5">
+        <meta name="theme-color" content="#ffffff">
+        <!--website icon End-->
+
+        <script type="text/javascript">
+            document.write("<base href='" + document.location.protocol + "//" + document.location.host + "' />");
+
+			//https://stackoverflow.com/questions/7364150/find-object-by-id-in-an-array-of-javascript-objects
+			// array = [{key:value},{key:value}]
+			function objectFindByKey(array, key, value) {
+				for (var i = 0; i < array.length; i++) {
+					if (array[i][key] === value) {
+						return array[i];
+					}
+				}
+				return null;
+			}
+
+			function findElementByText(text){
+				var elm=$("div:contains("+text+")")
+					.filter(function(){ return $(this).children().length === 0;});
+				return elm;
+			}
+
+            /* Begin blockUI initialisation */
+            /*$.blockUI.defaults.css = {
+                "display": "block",
+                "position": "absolute",
+                "text-align": "center",
+                "background-color": "#B8A9A9",
+                "color": "#FFF",
+                "line-height": "1.3em",
+                "font-size": "150%",
+                "width": "10em",
+                "left": "50%",
+                "top": "25%",
+                "margin-left": "-5em",
+                "margin-top": "-.7em",
+                "border-radius": "5px",
+                "padding": "7px",
+                "box-shadow": "3px 3px 3px rgba(0, 0, 0, .5)"
+                };
+            $.blockUI.defaults.message = "Connecting to the server...";*/
+            //$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+            /* End blockUI initialisation */
+
+			function highlightON(me){
+			    $('label').removeClass('linearBlink');
+			    me = $('#'+me).parent();
+
+			    // am I hidden !visible
+			    /*if($(me).is(":hidden")){
+                    $(me).parent().parent().parent().collapse('show');
+                }*/
+                //$('#Chkbx277').parent().parent().parent().parent().parent().parent().parent()[0].id;
+                //but for me it is one parent less
+                tab = $(me).parent().parent().parent().parent().parent().parent()[0].id;
+                $('.nav-tabs a[href="#' + tab + '"]').tab('show');
+
+                /////if($(me).parent().parent().parent().parent().children().attr('aria-expanded') == 'false'){
+                /*if(!$(me).parent().parent().parent().hasClass('collapse show')){
+                    $(me).parent().parent().parent().collapse('show');
+                    $(me).parent().parent().parent().on('shown.bs.collapse', function () {
+                        w = $(me).offset().top-100;
+                        $('html,body').animate({scrollTop: w},'slow',function(){
+                            $(me).addClass('linearBlink');
+                            setTimeout(function(){
+                                $(me).removeClass('linearBlink');
+                            }, 2000);
+                        });
+                    });
+                } else {
+                    $(me).addClass('linearBlink');
+                    setTimeout(function(){
+                        $(me).removeClass('linearBlink');
+                    }, 2000);
+                }*/
+
+
+                w = $(me).offset().top-100;
+                $('html,body').animate({scrollTop: w},'slow',function(){
+                    $(me).addClass('linearBlink');
+                    setTimeout(function(){
+                        $(me).removeClass('linearBlink');
+                    }, 2000);
+                });
+
+
+				//findElementByText($(me).text()).addClass("highlighter");
+                ////$('html,body').animate({scrollTop: $(me).offset().top-100},'slow', function(){$('html,body').animate({scrollTop: $(me).offset().top-100},'slow');});
+
+                ////$(me).get(0).scrollIntoView();
+
+                ////$(me).addClass('highlighter');
+                ////$(me).addClass('blink');
+			}
+
+			function highlightOFF(me){
+                ////me = $('#'+me).parent();
+				//findElementByText($(me).text()).removeClass('highlighter');
+				////$(me).removeClass('highlighter');
+				////$(me).removeClass('blink');
+				//////$(me).removeClass('linearBlink');
+                ////$('label').removeClass('linearBlink');
+			}
+
+            var toasts = [
+                new Toast('info', 'toast-top-left', 'Information!'),
+                new Toast('success', 'toast-top-left', 'Success!'),
+                new Toast('warning', 'toast-top-left', 'Warning!'),
+                new Toast('error', 'toast-top-left', 'Error!')
+            ];
+
+            toastr.options = {
+              "closeButton": true,
+              "debug": false,
+              "newestOnTop": false,
+              "progressBar": false,
+              "positionClass": "toast-top-right",
+              "preventDuplicates": true,
+              "onclick": null,
+              "showDuration": "300",
+              "hideDuration": "1000",
+              "timeOut": 0,
+              "extendedTimeOut": 0,
+              "showEasing": "swing",
+              "hideEasing": "linear",
+              "showMethod": "fadeIn",
+              "hideMethod": "fadeOut",
+              "tapToDismiss": false
+            }
+
+            function Toast(type, css, msg) {
+                this.type = type;
+                this.css = css;
+                this.msg = msg;
+            }
+
+            function showToast(i, msg, css) {
+                var t = toasts[i];
+                var msg = (typeof (msg) === "undefined")? t.msg : msg;
+                toastr.options.positionClass = (typeof (css) === 'undefined')? t.css : css;
+                toastr[t.type](msg);
+                $('#toast-container').addClass('no-print');
+                /*$('#toast-container').mouseout(function() {
+                    $('label').removeClass('linearBlink');
+                });*/
+            }
+        </script>
+        <title>iTrack Project - Reporting and Evaluation System - Start Page</title>
+
+        <!-- Bootstrap core CSS -->
+        <!--link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"-->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+
+        <!-- Font Awesome CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css" />
+
+        <!-- Toastr CSS -->
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet" />
+
+        <!-- Add additional CSS in static file -->
+        <!--link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.4.1/css/bootstrap-datepicker3.css"/-->
+        {% load static %}
+        <style>
+            body {
+                padding-top: 90px;
+                }
+
+            @media (max-width: 979px) {
+                body {
+                    padding-top: 90px;
+                }
+            }
+
+            .highlighter{
+            	background-color: #FFFF00;
+	            /*font-weight: bold;*/
+            }
+
+            /*https://stackoverflow.com/questions/4894488/blinking-text-cross-browser*/
+            @-webkit-keyframes blink {
+                from {
+                    opacity: 1.0;
+                }
+                to {
+                    opacity: 0.0;
+                }
+            }
+            .blink {
+                -webkit-animation-name: blink;
+                -webkit-animation-iteration-count: infinite;
+                -webkit-animation-timing-function: cubic-bezier(1.0, 0, 0, 1.0);
+                -webkit-animation-duration: 1s;
+            }
+
+            /*https://stackoverflow.com/questions/34439452/blinking-background-color-animation*/
+            .linearBlink {
+                animation-name: anim;
+                animation-duration: 0.5s;
+                animation-iteration-count: infinite;
+                animation-direction: alternate;
+                animation-timing-function: linear;
+                /*background-color: rgb(117,209,63);
+                border-color: #e50000;
+
+                border-width: 3px;
+                border-style: solid;
+                color: #fff;
+                text-shadow: 0 0 3px #000;*/
+            }
+            .bezierBlink {
+                animation-timing-function: cubic-bezier(.8,0,.2,1);
+            }
+            .stepsBlink {
+                animation-name: anim-half;
+                animation-timing-function: steps(1,end);
+            }
+
+            @keyframes anim {
+                to {
+                    background-color: #FFFF00;/*#e50000;*/
+                    /*border-color: rgb(117,209,63);*/
+                }
+            }
+            @keyframes anim-half {
+                50% {
+                    background-color: #FFFF00;/*#e50000;*/
+                    /*border-color: rgb(117,209,63);*/
+                }
+            }
+
+            /*https://stackoverflow.com/questions/468881/print-div-id-printarea-div-only*/
+            /*@media print {
+                body * {
+                    visibility: hidden;
+                    height:0;
+                }
+                .to-print, .to-print * {
+                    visibility: visible;
+                    height:auto;
+                    padding-bottom: 100%;
+                }
+                .to-print {
+                    position: absolute;
+                    left: 0;
+                    top: 0;
+                }
+            }*/
+            @media print {
+                .no-print, .no-print *
+                {
+                    display: none !important;
+                }
+            }
+
+            .centerInDiv {
+                width: 100px;
+                height: 100px;
+
+                position: absolute;
+                top:0;
+                bottom: 0;
+                left: 0;
+                right: 0;
+
+                margin: auto;
+            }
+
+            code {
+                background: hsl(220, 80%, 90%);
+            }
+
+            pre {
+                white-space: pre-wrap;
+                background: hsl(30,80%,90%);
+            }
+
+            /* Alert messages div
+            * --------------------------------------- */
+            .popupunder{
+                width: 300px;
+                position:fixed;
+                top: 10px;
+                right: 10px;
+                z-index: 9999;
+                border: 0;
+                padding: 20px;
+            }
+            .popupunder.alert-success{
+                border: 1px solid #198b49;
+                background:#27AE60;
+                color:#fff;
+            }
+            .popupunder .close{
+                font-size: 10px;
+                position:absolute !important;
+                right: 2px;
+                top: 3px;
+            }
+
+        </style>
+    </head>
+    <body>
+        <!-- Fixed navbar -->
+        <nav class="navbar navbar-expand-md navbar-light fixed-top bg-light">
+            <a class="navbar-brand" href="#"><img width="150px" src="http://www.itrack-project.eu/templates/bootstrap3/logo.png" alt="iTrack Project"/></a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon">
+            </button>
+            <div class="collapse navbar-collapse" id="navbarCollapse">
+                <ul class="navbar-nav mr-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="#">Home <span class="sr-only">(current)</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'develop:index'%}">Development Indicators</a>
+                    </li>
+                    <!--li class="nav-item">
+                        <a class="nav-link" href="{% url 'survey:surveyshow'%}">User Surveys</a>
+                    </li-->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">User Surveys</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="{% url 'survey:surveyshow'%}">Users Surveys Show</a>
+                            <a class="dropdown-item" href="{% url 'survey:surveyentry'%}">User Surveys Entry</a>
+                        </div>
+                    </li>
+
+                    <!--li class="nav-item">
+                        <a class="nav-link" href="{% url 'perform:performshow'%}">Performance Indicators</a>
+                    </li-->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#">Performance Indicators</a>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="{% url 'perform:performshow'%}">Performance Show</a>
+                            <!--a class="dropdown-item" href="{# url 'perform:performupload' #}">Performance Indicator Upload</a-->
+                            <a class="dropdown-item" href="{% url 'perform:performload'%}">Performance Indicator Load</a>
+                            <a class="dropdown-item" href="{% url 'perform:sopshow'%}">SOP Show</a>
+                            <a class="dropdown-item" href="{% url 'perform:sopentry'%}">SOP Entry</a>
+                        </div>
+                    </li>
+
+                    <!--li class="nav-item">
+                        <a class="nav-link disabled" href="#">Disabled</a>
+                    </li-->
+                </ul>
+                <div class="form-inline mt-2 mt-md-0">
+                    <div class="sidebar-nav">
+                    {% if user.is_authenticated %}
+                        <div>User: {{ user.get_username }}</div>
+                        <!--li><a href="{% url 'logout'%}?next={{request.path}}">Logout</a></li-->
+                        <div><a href="{% url 'logout'%}">Logout</a></div>
+                    {% else %}
+                        <div><a href="{% url 'login'%}?next={{request.path}}">Login</a></div>
+                    {% endif %}
+                    </div>
+                    <!--h4 class="mr-sm-2">iTRACK - Reporting and Evaluation System</h4-->
+                </div>
+            </div>
+        </nav>
+
+        <!--div class="popupunder alert alert-success" id="form-messages" role="alert" style="display:none;" >Message of the Alert</div-->
+        <div id="form-messages" class="popupunder alert alert-success fade in" role="alert" style="display:none;">
+            <button type="button" class="close close-sm" data-dismiss="alert"><i class="glyphicon glyphicon-remove"></i></button>
+            <strong><span class="form-messages-title">Success </span>: </strong> <span class="form-messages-body">The process has been completed successfully!</span>
+        </div>
+
+
+        <!--https://stackoverflow.com/questions/29511873/show-spinner-and-disable-page-while-waiting-for-ajax-request-->
+        <div class="modal hide" id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false">
+            <!--div class="modal-header">
+                <h1>Loading new scenario...</h1>
+            </div-->
+            <div class="modal-body centerInDiv">
+                <div id="ajax_loader" class="">
+                    <img src="{% static "img/ajax-loader.svg" %}" style="display: block; margin-left: auto; margin-right: auto;">
+                </div>
+            </div>
+        </div>
+{% block content %}
+{% endblock %}
+        <!--footer class="footer">
+            <div class="container">
+                <span class="text-muted">iTRACK - Scenario Generator.</span>
+            </div>
+        </footer-->
+
+
+        <!-- Bootstrap core JavaScript
+        ================================================== -->
+        <!-- Placed at the end of the document so the pages load faster -->
+        <!--script>window.jQuery || document.write('<script src="https://getbootstrap.com/assets/js/vendor/jquery.min.js"><\/script>')</script-->
+        <!--script src="https://getbootstrap.com/assets/js/vendor/popper.min.js"></script-->
+        <!--script src="https://getbootstrap.com/dist/js/bootstrap.min.js"></script-->
+        <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+        <!--script-- src="https://getbootstrap.com/assets/js/ie10-viewport-bug-workaround.js"></script-->
+
+        <script type="text/javascript">
+
+            $(function () {
+                $('[data-toggle="tooltip"]').tooltip()
+            })
+
+            /*function alertFn(responseText, success){
+                var formMessages = $('#form-messages');
+                if (success == true) {
+                    $(formMessages).removeClass('alert-danger');
+                    $(formMessages).addClass('alert-success');
+                    $(formMessages).fadeTo(2000, 500).slideUp(500, function(){
+                        $(formMessages).slideUp(1000);
+                    });
+                    $(formMessages).find('.form-messages-title').text('Success');
+                    $(formMessages).find('.form-messages-body').text(responseText);
+                } else {
+                    $(formMessages).removeClass('alert-success');
+                    $(formMessages).addClass('alert-danger');
+                    $(formMessages).fadeTo(2000, 500).slideUp(500, function(){
+                        $(formMessages).slideUp(1000);
+                    });
+                    $(formMessages).find('.form-messages-title').text('Failure');
+                    $(formMessages).find('.form-messages-body').text(responseText);
+                }
+
+            }*/
+
+
+            $('#totop-button').click(function(event) {
+                event.preventDefault();
+                $('html, body').animate({ scrollTop: 0 }, 'slow');
+                //https://www.w3schools.com/howto/howto_js_scroll_to_top.asp
+                //document.body.scrollTop = 0; // For Chrome, Safari and Opera
+                //document.documentElement.scrollTop = 0; // For IE and Firefox
+            });
+
+            $('#tobottom-button').click(function(event) {
+                event.preventDefault();
+                $('html, body').animate({ scrollTop: $( document ).height() }, 'slow');
+                //document.body.scrollTop = $( document ).height(); // For Chrome, Safari and Opera
+                //document.documentElement.scrollTop = $( document ).height(); // For IE and Firefox
+            });
+
+        </script>
+    </body>
+</html>

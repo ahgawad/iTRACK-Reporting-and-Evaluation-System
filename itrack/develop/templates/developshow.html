@@ -1,0 +1,125 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+{# block title %}Development Indicators Show{% endblock #}
+
+<!-- Begin page content -->
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h4 class="to-print">Develop</h4>
+            </div>
+            <div class="col-1">
+                <button class='btn btn-default pull-right' id='tobottom-button' data-toggle='tooltip' title='Scroll to the bottom'><i class="fa fa-angle-double-down" aria-hidden="true"></i></button>
+            </div>
+        </div>
+        <hr class="to-print" />
+            <div class="">
+                <form method="GET">
+                    <div class="form-group">
+                    <label for="indicator_selector">Indicator:</label>
+                    <select class="form-control" id="indicator_selector">
+                        {% for one_item in indicators_list %}
+                            <option value="{{ one_item.iciid }}">
+                            {{ one_item.indicator_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="component_selector">iTRACK Component:</label>
+                    <select class="form-control"  id="component_selector">
+                        {% for one_item in components_list %}
+                            <option value="{{ one_item.icid }}">
+                            {{ one_item.itrack_component_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="version_selector">Version:</label>
+                    <select class="form-control"  id="version_selector">
+                        {% for one_item in versions_list %}
+                            <option value="{{ one_item.icvid }}">
+                            {{ one_item.itrack_component_version }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    </div>
+
+                    <input type="button" class='btn btn-primary' value="Search" id="selection-button" method="GET">
+                </form>
+            </div>
+        <hr />
+        <div id="results_div" class="row to-print">
+            <div id="nodata_div" style="width: 100%; text-align:center;">No data to show!</div>
+
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col">
+                <input type="button" class='btn btn-primary' value="Print" onclick="window.print();" id="print-button" >
+            </div>
+            <div class="col-1">
+                <button class='btn btn-default pull-right' id='totop-button' data-toggle='tooltip' title='Scroll to the top'><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+            </div>
+        </div>
+
+        <hr />
+
+    </div>
+
+
+    <script type="text/javascript">
+        $("document").ready(function() {
+		    //$('div, hr').not('.print').not('.container').addClass('no-print');
+		    $('#results_div').data('old-state', $('#results_div').html());
+        });
+
+        $( "#selection-button" ).click(function(event) {
+            event.preventDefault();
+            $('#pleaseWaitDialog').modal();
+
+            var indicator_selected = $('#indicator_selector').find(":selected").val();
+            var component_selected = $('#component_selector').find(":selected").val();
+            var version_selected = $('#version_selector').find(":selected").val();
+
+            $.ajax({
+                 url: "{% url 'dev_ind_data' %}",
+                 method: 'GET',
+                 data : {
+                    'filter_indicator': parseInt(indicator_selected),
+                    'filter_component': parseInt(component_selected),
+                    'filter_version': parseInt(version_selected)
+                 },
+                 success: function(data){
+                    $('#pleaseWaitDialog').modal('hide');
+                    console.log(data)
+                    var trHTML = '';
+                    $.each(data, function (i, response) {
+                        for (i = 0; i < data.response.length; i++) {
+                            trHTML +=
+                                '<tr><td>'
+                                + data.response[i].iceid__itrack_component_element_name
+                                + '</td><td>'
+                                + data.response[i].indicator_value
+                                + '</td></tr>';
+                        }
+                    });
+
+
+                    if (trHTML!='') {
+                        $('#results_div').html('<table class="table"><thead align="center"><tr><th>Element Name</th><th>Value</th></tr></thead><tbody>'+trHTML+'</tbody></table>');
+                    } else {
+                        $('#results_div').html($('#results_div').data('old-state'));
+                    };
+
+                 },
+                 error: function(xhr, errmsg, err){
+                    $('#pleaseWaitDialog').modal('hide');
+                    $('#results_div').html($('#results_div').data('old-state'));
+                     console.log("error");
+                     console.log(errmsg);
+                     console.log(err);
+                 }
+            })
+        });
+    </script>
+
+{% endblock %}

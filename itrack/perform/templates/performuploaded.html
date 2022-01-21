@@ -1,0 +1,51 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+{% if request.user.is_superuser %}
+
+<!-- Begin page content -->
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h4>Peromance Indicator Upload</h4>
+            </div>
+            <div class="col-1">
+                <button class='btn btn-default pull-right' id='tobottom-button' data-toggle='tooltip' title='Scroll to the bottom'><i class="fa fa-angle-double-down" aria-hidden="true"></i></button>
+            </div>
+        </div>
+        <hr />
+            <div class="">
+                <form action="{{ request.build_absolute_uri }}upload/" method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label class="btn btn-primary" for="file-selector">
+                        <input id="file-selector" type="file" style="display:none"
+                        onchange="$('#upload-file-info').html(this.files[0].name)">
+                        Browse
+                    </label>
+                    <span class='label label-info' id="upload-file-info"></span>
+                    <br>
+            </div>
+        <hr />
+        <div class="row">
+            <div class="col">
+                    <input class='btn btn-primary' type="submit" value="Upload File" />
+                </form>
+            </div>
+            <div class="col-1">
+                <button class='btn btn-default pull-right' id='totop-button' data-toggle='tooltip' title='Scroll to the top'><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+            </div>
+        </div>
+        </form>
+
+        <hr />
+
+    </div>
+
+
+{% else %}
+<div>You must be an admin!</div>
+{% endif %}
+
+{% endblock %}

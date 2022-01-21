@@ -1,0 +1,374 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+{# block title %}User Surveys Show Results{% endblock #}
+
+<!-- Begin page content -->
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h4 class="to-print">Survey Show Results</h4>
+            </div>
+            <div class="col-1">
+                <button class='btn btn-default pull-right' id='tobottom-button' data-toggle='tooltip' title='Scroll to the bottom'><i class="fa fa-angle-double-down" aria-hidden="true"></i></button>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col">
+                <form method="GET">
+                <div class="form-group">
+                    <label for="survey_selector">Select survey:</label>
+                    <select class="form-control" id="survey_selector">
+                        {% for one_item in surveys_list %}
+                            <option value="{{ one_item.usid }}">
+                            {{ one_item.survey_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <!--label for="team_selector">Select team:</label>
+                    <select class="form-control" id="team_selector">
+                        {% for one_item in teams_list %}
+                            <option value="{{ one_item.tid }}">
+                            {{ one_item.team_name }}
+                            </option>
+                        {% endfor %}
+                    </select-->
+                    <label for="component_selector">Select component:</label>
+
+
+                    <select class="form-control" id="component_selector">
+                        {% for one_item in components_list %}
+                            <option value="{{ one_item.icid }}">
+                            {{ one_item.itrack_component_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <label for="version_selector">Select version:</label>
+
+                    <select class="form-control" id="version_selector">
+                        {% for one_item in versions_list %}
+                            <option value="{{ one_item.icvid }}">
+                            {{ one_item.itrack_component_version }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <!--span class="input-group date" data-date-format="dd.mm.yyyy"><label for="start_date">Start date:</label>
+                        <input  type="text" class="form-control" placeholder="dd.mm.yyyy" id="start_date">
+                            <div class="input-group-addon" >
+                            <span class="glyphicon glyphicon-th"></span>
+                        </div>
+                    </span>
+                    <span class="input-group date" data-date-format="dd.mm.yyyy"><label for="end_date">End date:</label>
+                        <input  type="text" class="form-control" placeholder="dd.mm.yyyy" id="end_date">
+                            <div class="input-group-addon" >
+                            <span class="glyphicon glyphicon-th"></span>
+                        </div>
+                    </span-->
+                    <!--span class="input-group date" data-date-format="dd.mm.yyyy"><label for="start_date">Start date:</label>
+                        <input  type="date" class="form-control" placeholder="dd.mm.yyyy" id="start_date">
+                    </span>
+                    <span class="input-group date" data-date-format="dd.mm.yyyy"><label for="end_date">End date:</label>
+                        <input  type="date" class="form-control" placeholder="dd.mm.yyyy" id="end_date">
+                    </span-->
+
+                    <span><label for="start_date">Start date:</label>
+                        <input class="form-control" type = 'date' id='start_date' name='start_date'></span>
+                    <span><label for="end_date">End date:</label>
+                        <input class="form-control" type = 'date' id='end_date' name='end_date'></span>
+                    </div>
+                    <input type="button" class='btn btn-primary' value="Search" id="selection-button" method="GET">
+                </form>
+            </div>
+        </div>
+        <hr />
+        <div id="results_div" class="row to-print">
+            <div class="col">
+                <div id="nodata_div" style="width: 100%; text-align:center;">No data to show!</div>
+                <div id="figure" class="to-print"></div>
+                <div id="items_text" style="" class="to-print"></div>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col">
+                <input type="button" class='btn btn-primary' value="Print" onclick="window.print();" id="print-button" >
+            </div>
+            <div class="col-1">
+                <button class='btn btn-default pull-right' id='totop-button' data-toggle='tooltip' title='Scroll to the top'><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+            </div>
+        </div>
+
+        <hr />
+
+    </div>
+
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.13/d3.min.js"></script>
+    <script type="text/javascript">
+        function rgb2hex(red, green, blue) {
+            var rgb = blue | (green << 8) | (red << 16);
+            return '#' + (0x1000000 + rgb).toString(16).slice(1);
+        }
+        //https://stackoverflow.com/questions/6615002/given-an-rgb-value-how-do-i-create-a-tint-or-shade
+        function tint(currentR, currentG, currentB, tint_factor) { //tint_factor increase for lighter color
+            newR = currentR + (255 - currentR) * tint_factor;
+            newG = currentG + (255 - currentG) * tint_factor;
+            newB = currentB + (255 - currentB) * tint_factor;
+            return rgb2hex(newR, newG, newB);
+        }
+        //https://stackoverflow.com/questions/6982692/html5-input-type-date-default-value-to-today/30788475
+        Date.prototype.toDateInputValue = (function(d) {
+            var local = new Date(this);
+            local.setMinutes(this.getMinutes() - this.getTimezoneOffset()-d*365.25*24*60);
+            return local.toJSON().slice(0,10);
+        });
+        $(document).ready( function() {
+            //$('.input-group.date').datepicker({format: "dd.mm.yyyy"});
+            $('#start_date').val(new Date().toDateInputValue(1));
+            $('#end_date').val(new Date().toDateInputValue(0));
+            $('#results_div').data('old-state', $('#results_div').html());
+
+            //$('*').not('.print').not('.container').addClass('no-print');
+            //$('.print').parentsUntil('.container').addClass('no-print').removeClass('no-print');
+        });
+    </script>
+    <script type="text/javascript">
+        $( "#selection-button" ).click(function(event) {
+            event.preventDefault();
+            $('#pleaseWaitDialog').modal();
+            var survey_selected = $('#survey_selector').find(":selected").val();
+            //var team_selected = $('#team_selector').find(":selected").val();
+            var component_selected = $('#component_selector').find(":selected").val();
+            var version_selected = $('#version_selector').find(":selected").val();
+            var start_date_selected = $('#start_date').val();
+            var end_date_selected = $('#end_date').val();
+
+            $.ajax({
+                 url: "{% url 'sur_charts_data' %}",
+                 method: 'GET',
+                 data : {
+                    'filter_survey': parseInt(survey_selected),
+                    'filter_component': parseInt(component_selected),
+                    'filter_version': parseInt(version_selected),
+                    'filter_start_date': start_date_selected,
+                    'filter_end_date': end_date_selected
+
+                 },
+                 success: function(data){
+                    $('#pleaseWaitDialog').modal('hide');
+                    console.log(data)
+                    $('#nodata_div').hide();
+
+                    //https://github.com/wpoely86/D3.js-Diverging-Stacked-Bar-Chart
+                    //Chart
+                    $('#figure').html('');
+                    $('#items_text').html('');
+
+                    chartdata = data.chartdata;
+                    question_min_value = data.question_min_value;
+                    question_max_value =data.question_max_value;
+                    NumQuestions = chartdata.length;
+
+                    NumDegrees = question_max_value + (-1*question_min_value) + 1;
+                    var margin = {top: 50, right: 20, bottom: 10, left: 65},
+                        width = 800 - margin.left - margin.right,
+                        height = NumQuestions*40 - margin.top - margin.bottom;
+
+                    var y = d3.scale.ordinal()
+                        .rangeRoundBands([0, height], .3);
+
+                    var x = d3.scale.linear()
+                        .rangeRound([0, width]);
+
+                    var greenRange = [];//['#C7E9C0', '#00441B'];
+                    var redRange = [];//['#FCBBA1', '#67000D'];
+                    var colorRange = [];//['#C7E9C0', '#67000D'];
+
+                    tintFactorStep = (0.5-0.1)/(((NumDegrees-1)/2)-1)
+                    for (i = 1; i <= (NumDegrees-1)/2; i++) {
+                        greenRange.push(tint(0,255,127,i*tintFactorStep));
+                        redRange.push(tint(255,0,127,i*tintFactorStep));
+                    }
+                    greenRange.reverse();
+                    redRange.push(tint(255,255,127,0));//.push('#ffda6b');
+                    colorRange = redRange.concat(greenRange);
+
+                    var color = d3.scale.ordinal().range(colorRange);
+                    var color = d3.scale.ordinal().range(["#1b70fc", "#faff16", "#d50527", "#158940", "#f898fd", "#24c9d7", "#cb9b64", "#866888", "#22e67a", "#e509ae", "#9dabfa", "#437e8a", "#b21bff", "#ff7b91", "#94aa05", "#ac5906", "#82a68d", "#fe6616", "#7a7352", "#f9bc0f", "#b65d66", "#07a2e6", "#c091ae", "#8a91a7", "#88fc07", "#ea42fe", "#9e8010", "#10b437", "#c281fe", "#f92b75", "#07c99d", "#a946aa", "#bfd544", "#16977e", "#ff6ac8", "#a88178", "#5776a9", "#678007", "#fa9316", "#85c070", "#6aa2a9", "#989e5d", "#fe9169", "#cd714a", "#6ed014", "#c5639c", "#c23271", "#698ffc", "#678275", "#c5a121", "#a978ba", "#ee534e", "#d24506", "#59c3fa", "#ca7b0a", "#6f7385", "#9a634a", "#48aa6f", "#ad9ad0", "#d7908c", "#6a8a53", "#8c46fc", "#8f5ab8", "#fd1105", "#7ea7cf", "#d77cd1", "#a9804b", "#0688b4", "#6a9f3e", "#ee8fba", "#a67389", "#9e8cfe", "#bd443c", "#6d63ff", "#d110d5", "#798cc3", "#df5f83", "#b1b853", "#bb59d8", "#1d960c", "#867ba8", "#18acc9", "#25b3a7", "#f3db1d", "#938c6d", "#936a24", "#a964fb", "#92e460", "#a05787", "#9c87a0", "#20c773", "#8b696d", "#78762d", "#e154c6", "#40835f", "#d73656", "#1afd5c", "#c4f546", "#3d88d8", "#bd3896", "#1397a3", "#f940a5", "#66aeff", "#d097e7", "#fe6ef9", "#d86507", "#8b900a", "#d47270", "#e8ac48", "#cf7c97", "#cebb11", "#718a90", "#e78139", "#ff7463", "#bea1fd"]);
+
+                    var xAxis = d3.svg.axis()
+                        .scale(x)
+                        .orient("top");
+
+                    var yAxis = d3.svg.axis()
+                        .scale(y)
+                        .orient("left")
+
+                    var svg = d3.select("#figure").append("svg")
+                        .attr("width", width + margin.left + margin.right)
+                        .attr("height", height + margin.top + margin.bottom)
+                        .attr("id", "d3-plot")
+                      .append("g")
+                        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+                      //color.domain(["Strongly disagree", "Disagree", "Neither agree nor disagree", "Agree", "Strongly agree"]);
+
+                        var Degrees = [];
+                        for (var i = question_min_value; i <= question_max_value; i++) {
+                            Degrees.push(" "+i);
+                        }
+                        color.domain(Degrees);
+
+                        var dN;
+                        chartdata.forEach(function(d) {
+                            dN = 0;
+                            for (i = 1; i <= NumDegrees; i++) {
+                                dN += d[i];
+                        }
+                        // calc percentages
+                        for (var i = 0; i < NumDegrees; i++) {
+                            d[Degrees[i]] = +d[i+1]*100/dN;
+                        }
+
+                        term=0;
+                        for (var i = 0; i < (NumDegrees-1)/2; i++) {
+                            term+=d[Degrees[i]];
+                        }
+                        var x0 = -1*(d[Degrees[i]]/2+term);
+                        var idx = 0;
+                        d.boxes = color.domain().map(function(name) { return {name: name, x0: x0, x1: x0 += +d[name], N: +dN, n: +d[idx += 1]}; });
+                      });
+
+                      var min_val = d3.min(chartdata, function(d) {
+                              return d.boxes[0].x0;
+                              });
+
+                      var max_val = d3.max(chartdata, function(d) {
+                              return d.boxes[NumDegrees-1].x1;
+                              });
+
+                      x.domain([min_val, max_val]).nice();
+                      y.domain(chartdata.map(function(d) { return d.Question; }));
+
+                      svg.append("g")
+                          .attr("class", "x axis")
+                          .call(xAxis);
+
+                      svg.append("g")
+                          .attr("class", "y axis")
+                          .call(yAxis)
+
+                      var vakken = svg.selectAll(".question")
+                          .data(chartdata)
+                        .enter().append("g")
+                          .attr("class", "bar")
+                          .attr("transform", function(d) { return "translate(0," + y(d.Question) + ")"; });
+
+                      var bars = vakken.selectAll("rect")
+                          .data(function(d) { return d.boxes; })
+                        .enter().append("g").attr("class", "subbar");
+
+                      bars.append("rect")
+                          .attr("height", y.rangeBand())
+                          .attr("x", function(d) { return x(d.x0); })
+                          .attr("width", function(d) { return x(d.x1) - x(d.x0); })
+                          .style("fill", function(d) { return color(d.name); });
+
+                      bars.append("text")
+                          .attr("x", function(d) { return x(d.x0); })
+                          .attr("y", y.rangeBand()/2)
+                          .attr("dy", "0.5em")
+                          .attr("dx", "0.5em")
+                          .style("font" ,"10px sans-serif")
+                          .style("text-anchor", "begin")
+                          .text(function(d) { return d.n !== 0 && (d.x1-d.x0)>3 ? d.n : "" });
+
+                      vakken.insert("rect",":first-child")
+                          .attr("height", y.rangeBand())
+                          .attr("x", "1")
+                          .attr("width", width)
+                          .attr("fill-opacity", "0.5")
+                          .style("fill", "#F5F5F5")
+                          .attr("class", function(d,index) { return index%2==0 ? "even" : "uneven"; });
+
+                      svg.append("g")
+                          .attr("class", "y axis")
+                      .append("line")
+                          .attr("x1", x(0))
+                          .attr("x2", x(0))
+                          .attr("y2", height);
+
+                      var startp = svg.append("g").attr("class", "legendbox").attr("id", "mylegendbox");
+                      // this is not nice, we should calculate the bounding box and use that
+
+                      var legend_tabs = [];
+                      for (var i = 0; i < NumDegrees; i++) {
+                       legend_tabs.push(i*70);
+                      }
+                      var legend = startp.selectAll(".legend")
+                          .data(color.domain().slice())
+                        .enter().append("g")
+                          .attr("class", "legend")
+                          .attr("transform", function(d, i) { return "translate(" + legend_tabs[i] + ",-45)"; });
+
+                      legend.append("rect")
+                          .attr("x", 0)
+                          .attr("width", 18)
+                          .attr("height", 18)
+                          .style("fill", color);
+
+                      legend.append("text")
+                          .attr("x", 22)
+                          .attr("y", 9)
+                          .attr("dy", ".35em")
+                          .style("text-anchor", "begin")
+                          .style("font" ,"10px sans-serif")
+                          .text(function(d) { return d; });
+
+                      d3.selectAll(".axis path")
+                          .style("fill", "none")
+                          .style("stroke", "#000")
+                          .style("shape-rendering", "crispEdges")
+
+                      d3.selectAll(".axis line")
+                          .style("fill", "none")
+                          .style("stroke", "#000")
+                          .style("shape-rendering", "crispEdges")
+
+                      var movesize = width/2 - startp.node().getBBox().width/2;
+                      d3.selectAll(".legendbox").attr("transform", "translate(" + movesize  + ",0)");
+
+
+                    questions_obj = {};
+                    chartdata.forEach(function(d) {
+                        if (questions_obj[d['Construct']]!=undefined) {
+                            questions_obj[d['Construct']].push({'Question':d['Question'],'Question_text':d['Question_text']});
+                        } else {
+                            questions_obj[d['Construct']]= [{'Question':d['Question'],'Question_text':d['Question_text']}];
+                        }
+                        })
+
+                    question_text='';
+                    for (var key in questions_obj) {
+                        question_text+='<h6>Construct: '+key+'</h6><ul>';
+                        questions_obj[key].forEach(function(d) { question_text+="<li>"+d['Question']+": "+d['Question_text']+"</li>" })
+                        question_text+='</ul>';
+                    }
+                    $('#items_text').html(question_text);
+
+                 },
+                 error: function(xhr, errmsg, err){
+                    $('#pleaseWaitDialog').modal('hide');
+                    $('#results_div').html($('#results_div').data('old-state'));
+                     console.log("error");
+                     console.log(errmsg);
+                     console.log(err);
+                 }
+            })
+        });
+
+
+
+    </script>
+
+{% endblock %}

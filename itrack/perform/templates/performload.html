@@ -1,0 +1,331 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+{# block title %}Performance Indicators Upload Logs{% endblock #}
+
+{% if request.user.is_superuser %}
+
+<!-- Begin page content -->
+    <style>
+      #progress_bar {
+        margin: 10px 0;
+        padding: 3px;
+        border: 1px solid #000;
+        font-size: 14px;
+        clear: both;
+        opacity: 0;
+        -moz-transition: opacity 1s linear;
+        -o-transition: opacity 1s linear;
+        -webkit-transition: opacity 1s linear;
+      }
+      #progress_bar.loading {
+        opacity: 1.0;
+      }
+      #progress_bar .percent {
+        background-color: #99ccff;
+        height: auto;
+        width: 0;
+      }
+    </style>
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h4>Peromance Indicator Upload</h4>
+            </div>
+            <div class="col-1">
+                <button class='btn btn-default pull-right' id='tobottom-button' data-toggle='tooltip' title='Scroll to the bottom'><i class="fa fa-angle-double-down" aria-hidden="true"></i></button>
+            </div>
+        </div>
+        <hr />
+            <div class="">
+                <form id="selection-form">
+                    <div class="input-group">
+                      <div class="custom-file">
+                        <input type="file" class="custom-file-input" id="file-selector" name="file-selector">
+                        <label class="custom-file-label" for="file-selector">Choose file</label>
+                      </div>
+                      <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" onclick="abortRead();" type="button">Cancel read</button>
+                      </div>
+                    </div>
+                    <div id="progress_bar"><div class="percent">0%</div></div>
+                </form>
+            </div>
+        <hr />
+    <script type="text/javascript">
+      var jsonObj;
+      var jsonData;
+      var reader;
+      var progress = document.querySelector('.percent');
+
+      function abortRead() {
+        reader.abort();
+      }
+
+      function errorHandler(evt) {
+        switch(evt.target.error.code) {
+          case evt.target.error.NOT_FOUND_ERR:
+            alert('File Not Found!');
+            break;
+          case evt.target.error.NOT_READABLE_ERR:
+            alert('File is not readable');
+            break;
+          case evt.target.error.ABORT_ERR:
+            break; // noop
+          default:
+            alert('An error occurred reading this file.');
+        };
+      }
+
+      function updateProgress(evt) {
+        // evt is an ProgressEvent.
+        if (evt.lengthComputable) {
+          var percentLoaded = Math.round((evt.loaded / evt.total) * 100);
+          // Increase the progress bar length.
+          if (percentLoaded < 100) {
+            progress.style.width = percentLoaded + '%';
+            progress.textContent = percentLoaded + '%';
+          }
+        }
+      }
+
+      function handleFileSelect(evt) {
+        // Reset progress indicator on new file selection.
+        progress.style.width = '0%';
+        progress.textContent = '0%';
+
+        reader = new FileReader();
+        reader.onerror = errorHandler;
+        reader.onprogress = updateProgress;
+        reader.onabort = function(e) {
+          alert('File read cancelled');
+        };
+        reader.onloadstart = function(e) {
+          document.getElementById('progress_bar').className = 'loading';
+        };
+        reader.onload = function(e) {
+            // Ensure that the progress bar displays 100% at the end.
+            progress.style.width = '100%';
+            progress.textContent = '100%';
+            setTimeout("document.getElementById('progress_bar').className='';", 2000);
+            jsonData=reader.result;
+            jsonData=jsonData.replace(/\n|\r/g, "");
+            if(jsonData.substring(jsonData.length-2, jsonData.length) == ",]") {
+                jsonData = jsonData.slice(0, -2)+"]";
+            }
+            jsonObj = JSON.parse(jsonData);
+
+            //var div = document.getElementById('indicator_selector'),
+            //clone = div.cloneNode(true); // true means clone all childNodes and all event handlers
+            var clonedDiv = $('#indicator_selector_div').clone();
+            //clonedDiv.show();
+
+            trHTML = "";
+            thHTML = "";
+            //trHTML += "<table border='1'>"
+
+            for (var i = 0; i < jsonObj.length; i++){
+                var obj = jsonObj[i];
+                if(i==0){
+                    thHTML += "<tr align='center'>"
+                    for (var key in obj){
+                        var attrName = key;
+                        //clone.id = "indicator_selector_"+key;
+                        //clonedDiv.attr("id", "indicator_selector_"+key);
+                        //clonedDiv.children()[0].attr("for", "indicator_selector_"+key);
+                        $(clonedDiv.children()[0]).attr("for", "indicator_selector_"+key);
+                        //clonedDiv.children()[1].attr("id", "indicator_selector_"+key);
+                        $(clonedDiv.children()[1]).attr("id", "indicator_selector_"+key);
+                        $('#'+clonedDiv.children()[1].id+' option[value*="'+attrName+'"]').prop('selected',true);
+                        //document.body.appendChild(clone);
+                        thHTML += "<th>" + attrName ;
+                        //thHTML += "<br>" + clonedDiv.html();
+                        thHTML += "</th>";
+
+                    }
+                    thHTML += "</tr>";
+                    $('#tHead').html(thHTML);
+                }
+                trHTML += "<tr>";
+                for (var key in obj){
+                    var attrValue = obj[key];
+                    trHTML += "<td>" + attrValue + "</td>";
+                }
+                trHTML += "</tr>";
+            }
+            //trHTML += "</table>"
+            $('#tBody').html(trHTML);
+            $('#nodata_div').hide();
+            $('#results_tab').show();
+            console.log(jsonObj);
+            $('#selection-form :input').prop('disabled', true);
+            $('#sending-form :input').prop('disabled', false);
+
+        }
+
+        // Read in the file as a text.
+        reader.readAsText(evt.target.files[0]);
+
+      }
+
+      document.getElementById('file-selector').addEventListener('change', handleFileSelect, false);
+    </script>
+        <div  id="indicator_selector_div" class="form-group" style="display:none;">
+            <label for="indicator_selector">Indicator:</label>
+            <select class="form-control" id="indicator_selector">
+                {% for key, value in indicators_list.items %}
+                    <option value="{{ key }}">
+                    {{ value }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        {% csrf_token %}
+        <form id="sending-form" data-toggle="validator" role="form">
+            <div class="row">
+                    <div id="nodata_div" style="width: 100%; text-align:center;">No data to show!</div>
+                    <table id="results_tab" class="table" style="display: none;">
+                      <!--caption>Smaple Data Table</caption-->
+                      <thead id="tHead"></thead>
+                      <tbody id="tBody"></tbody>
+                    </table>
+            </div>
+            <hr />
+            <div class="row">
+                <div id="sending-form-buttons" class="col">
+                    <input type="button" class='btn btn-primary' value="Send" id="sending-button" method="GET" disabled>
+                    <!--input type="button" class='btn btn-primary' value="reset" id="reset-button" disabled-->
+                    <input type="button" class='btn btn-primary' value="Cancel" id="cancel-button" disabled>
+                </div>
+                <div class="col-1">
+                    <button class='btn btn-default pull-right' id='totop-button' data-toggle='tooltip' title='Scroll to the top'><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+                </div>
+            </div>
+        </form>
+
+        <hr />
+
+    </div>
+
+    <script type="text/javascript" src="http://cdnjs.cloudflare.com/ajax/libs/d3/3.4.13/d3.min.js"></script>
+    <script type="text/javascript">
+
+        Date.prototype.toDateInputValue = (function() {
+            var local = new Date(this);
+            local.setMinutes(this.getMinutes() - this.getTimezoneOffset());
+            return local.toJSON().slice(0,10);
+        });
+        $(document).ready( function() {
+            //$('.input-group.date').datepicker({format: "dd.mm.yyyy"});
+           // $('#start_date').val(new Date().toDateInputValue());
+           // $('#end_date').val(new Date().toDateInputValue());
+           //$('#sending-form').validator()
+        });
+    </script>
+    <script type="text/javascript">
+        $('#cancel-button').click(function(event) {
+            event.preventDefault();
+            toastr.clear();
+            $('#sending-form-buttons :input').prop('disabled', true);
+            $('#selection-form :input').prop('disabled', false);
+            $('#tHead').html('');
+            $('#tBody').html('');
+            $('#results_tab').hide();
+            $('#nodata_div').show();
+        });
+
+        /*
+        $('#reset-button').click(function(event) {
+            event.preventDefault();
+            toastr.clear();
+            $("#sending-form :input:radio").each(function() {
+                this.checked=false;
+            });
+        });
+        */
+
+        $('#sending-button').click(function(event) {
+            event.preventDefault();
+            $('#pleaseWaitDialog').modal();
+
+            toastr.clear();
+            /*
+            var blank = false;
+            $("input:radio").each(function() {
+                var val = $('input:radio[name=' + this.name + ']:checked').val();
+                if (val === undefined) {
+                    blank = true;
+                    return false;
+                }
+            });
+            if (blank) {
+               //alert("You missed answering one or more of the questions.");
+               //alertFn("You missed answering one or more of the questions!", false)
+               showToast(3, "You missed answering one or more of the questions!", "toast-top-center");
+               return;
+            }
+            //alert(blank ? "At least one group is blank" : "All groups are checked");
+
+
+            var survey_selected = $('#survey_selector').find(":selected").val();
+            //var team_selected = $('#team_selector').find(":selected").val();
+            var component_selected = $('#component_selector').find(":selected").val();
+            var version_selected = $('#version_selector').find(":selected").val();
+            //var start_date_selected = $('#start_date').val();
+            //var end_date_selected = $('#end_date').val();
+
+
+            QuestAnswer={};
+            checkRadios=$("form#sending-form input:radio:checked");
+            for(i=0;i<checkRadios.length;i++) {
+                //console.log( index + ": " + $( this ).value + "name: " +$( this ).name);
+                QuestAnswer[checkRadios[i].name]=checkRadios[i].value;
+            };
+            */
+            //$.blockUI();
+
+            $.ajax({
+                 url: "{% url 'perform_load_data' %}",
+                 method: 'POST',
+                 data : {
+                    //'filter_survey': parseInt(survey_selected),
+                    //'filter_component': parseInt(component_selected),
+                    //'filter_version': parseInt(version_selected),
+                    'perform_ind_vals': JSON.stringify(jsonObj)
+
+                 },
+                 success: function(data){
+                    $('#pleaseWaitDialog').modal('hide');
+                    console.log(data)
+                    $('#sending-form :input').prop('disabled', true);
+                    $('#selection-form :input').prop('disabled', false);
+                    $('#tHead').html('');
+                    $('#tBody').html('');
+                    $('#results_tab').hide();
+                    $('#nodata_div').show();
+        			//$.unblockUI();
+
+                    //alert("Survey completed successfully!");
+                    //alertFn("Survey completed successfully!", true)
+                    showToast(1, "Survey completed successfully!", "toast-top-center");
+
+                 },
+                 error: function(xhr, errmsg, err){
+                    $('#pleaseWaitDialog').modal('hide');
+                     console.log("error");
+                     console.log(errmsg);
+                     console.log(err);
+                     showToast(2, xhr.responseJSON.error, "toast-top-center");
+                 }
+            })
+        });
+
+
+
+    </script>
+
+{% else %}
+<div>You must be an admin!</div>
+{% endif %}
+
+{% endblock %}

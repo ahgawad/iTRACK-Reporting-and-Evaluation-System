@@ -1,0 +1,59 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<!-- Begin page content -->
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h4>Reporting and Evaluation System</h4>
+            </div>
+            <div class="col-1">
+                <button class='btn btn-default pull-right' id='tobottom-button' data-toggle='tooltip' title='Scroll to the bottom'><i class="fa fa-angle-double-down" aria-hidden="true"></i></button>
+            </div>
+        </div>
+        <hr />
+            <div class="">
+                <p>This website implements the <i>iTRACK Evaluation Methods for Integrated System</i>, which is a framework to measure <b>quality</b> and <b>usefulness</b> of iTRACK technology. The integrated system evaluation framework assists in measuring the quality and usefulness of the iTRACK integrated system, by using methods and metrics to evaluate the ITRACK system quality in terms of meeting the specified requirements as well as user satisfaction. The former is achieved via testing the software system against the requirements in terms of specifications, use cases, design documents, etc. which is conducted in the iTRACK development workpackages and their deliverables, while the latter is achieved via testing the iTRACK system components usability directly with users both in office and field settings, and subjectively via questionnaires to administered to these users. Lastly, the framework will guide the measurement of the iTRACK system usefulness in terms of how the system is helping users in accomplishing their job tasks quicker, improving their job performance, productivity, effectiveness, and in general making their job easier.
+                In other words, the framework will measure the enhancement in performance indicators as a result of using the iTRACK system.</p>
+
+                <p>Evaluation and testing is a major step in the development life-cycle of any software system, and it is a vital phase in quality assurance of the system <a href="#ref_1">[1]</a>. Software system evaluation frameworks aim at assessing the system quality and sophistication from diverse viewpoints <a href="#ref_2">[2]</a>. Nonetheless, up to our knowledge, a comprehensive evaluation framework that combines technology, functionality and usefulness tests does not exist in the application field of projects aiming at creating platforms that provide tools for improving the protection and safety of humanitarian missions with intelligent socio-technical solutions to support tracking, threat detection, navigation, logistics, and coordination in humanitarian disasters. The lack of such a framework and commonly agreed standards constitutes a major barrier for innovation, and at the same time may impose risks to responders if the technology is introduced without proper testing.</p>
+
+                <p>Software system <b>quality</b> is defined by the Institute of Electrical and Electronics Engineers IEEE as “the degree to which a system, component, or process meets specified requirements” and “the degree to which a system, component, or process meets customer or user needs or expectations” <a href="#ref_3">[3]</a>. The International Software Testing Qualifications Board ISTQB defines the quality in general as “the degree to which a component, system or process meets specified requirements and/or user/customer needs and expectations” <a href="#ref_4">[4]</a>, whereas it defines the software quality as “the totality of functionality and features of a software product that bear on its ability to satisfy stated or implied needs” <a href="#ref_4">[4]</a>. In total, the <b>quality</b> of a software is about meeting the <b>specified requirements</b> as well as <b>user satisfaction</b>.
+                The former is achieved via testing the software system components individually or together, or the whole system against the requirements in terms of specifications, use cases, design documents, etc., while the latter is achieved via testing the system <b>usability</b> and <b>user-satisfaction </b><a href="#ref_5">[5]</a>.</p>
+
+                <p>System <b>usefulness</b> means that “a product, website or application should solve a problem, fill a need or offer something people find useful” <a href="#ref_6">[6]</a>. Based on Fred Davis’ usefulness construct, system usefulness is about helping users in accomplishing job tasks quicker, improving job performance, productivity, and effectiveness, in addition to making the job easier to do in general. <a href="#fig_1">Figure 1</a> shows the pillars of our suggested integrated system evaluation framework.</p>
+
+                <div align=center>
+					<img width=885 height=243 id="fig_1" src="static/img/image001.svg"></p>
+					<p>Figure 1. The Suggested Integrated System Framework</p>
+                </div>
+
+                <p>The rest of this paper is organized as follows: the next section provides an overview of our methodology to achieve the goal of this paper. The ‘Results’ section follows and describes the evaluation methods reviewed and the evaluation methods selected for the iTRACK integrated system as well. Finally, we conclude with the ‘Summary’ section.</p>
+
+                <p id="ref_1">[1]&nbsp;&nbsp; I. Jovanovi&#263;, “Software testing methods and techniques,” <i>IPSI BgD Trans. Internet Res.</i>, vol. 30, 2006. </p>
+
+                <p id="ref_2">[2]&nbsp;&nbsp; G. Boloix and P. N. Robillard, “A software system evaluation framework,” <i>Computer</i>, vol. 28, no. 12, pp. 17–26, Dec. 1995. </p>
+
+                <p id="ref_3">[3]&nbsp;&nbsp; IEEE Computer Society, Ed., <i>IEEE standard glossary of software engineering terminology</i>, Corr. ed. New York: Institute of Electrical and Electronics Engineers, 1991. </p>
+
+                <p id="ref_4">[4]&nbsp;&nbsp; “ISTQB Glossary.”&nbsp; [Online]. Available: <a target="_blank" href="http://glossary.istqb.org/">http://glossary.istqb.org/</a>. [Accessed: 25-Apr-2018]</p>
+
+                <p id="ref_5">[5]&nbsp;&nbsp; J. Nielsen, <i>Usability Engineering</i>, 1st ed. Amsterdam, the Netherlands: Morgan Kaufmann, 1993. </p>
+
+                <p id="ref_6">[6]&nbsp;&nbsp; “MeasuringU: Measuring Usefulness.”&nbsp; [Online]. Available: <a target="_blank" href="https://measuringu.com/usefulness/">https://measuringu.com/usefulness/</a>. [Accessed: 30-Mar-2018]</p>
+            </div>
+        <hr />
+        <div class="row">
+            <div class="col">
+            </div>
+            <div class="col-1">
+                <button class='btn btn-default pull-right' id='totop-button' data-toggle='tooltip' title='Scroll to the top'><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+            </div>
+        </div>
+
+        <hr />
+
+    </div>
+
+{% endblock %}

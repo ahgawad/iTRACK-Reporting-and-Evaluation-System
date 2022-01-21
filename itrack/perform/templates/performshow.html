@@ -1,0 +1,443 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+{# block title %}Peformance Indicators Show Results{% endblock #}
+
+{% load app_filters %}
+{% load static from staticfiles %}
+    <!-- Begin page content -->
+    <!--script type='text/javascript' src='{% static "js/bootstrap-multiselect.js" %}'></script>
+    <link rel='stylesheet' href='{% static "css/bootstrap-multiselect.css" %}' type="text/css" /-->
+    <!--script type='text/javascript' src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js'></script-->
+    <link rel="stylesheet" href="http://forio.com/tools/contour/contour.min.css">
+    <link rel="stylesheet" href='{% static "css/contour.css" %}'>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <script src="http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js"></script>
+    <script src="http://forio.com/tools/contour/contour.min.js"></script>
+    <script type="text/javascript">
+     function checkMeUT(val){
+        if (val=='team') {
+            $("#team_selector").removeAttr("disabled").trigger("click");
+            $("#users_selector").attr("disabled","disabled");
+        } else {
+            $("#users_selector").removeAttr("disabled");
+            $("#team_selector").attr("disabled","disabled");
+        }
+     }
+     function checkMeTP(val){
+        if (val=='phase') {
+            $("#phase_selector").removeAttr("disabled").trigger("click");
+            $("#tasks_selector").attr("disabled","disabled");
+        } else {
+            $("#tasks_selector").removeAttr("disabled");
+            $("#phase_selector").attr("disabled","disabled");
+        }
+     }
+
+     function selectTasks(_this){
+        phase_tasks = JSON.parse(_this.options[_this.selectedIndex].dataset.phase_tasks);
+        $.each($('#tasks_selector').find($('option')), function(idx, val) {
+            console.log(String(val.value));
+            if (phase_tasks.includes(parseInt(val.value))) {
+                val.selected = "selected";
+            } else {
+                val.selected = false;
+            }
+        });
+     }
+
+     function selectUsers(_this){
+        //_this.options[_this.selectedIndex].getAttribute('data-team_members');
+        //$(_this).attr("team_members")
+        //_this.options[_this.selectedIndex].dataset.team_members;
+        //$('#someid').find($('option')).attr('selected',false);
+        /*
+        $.each(JSON.parse(_this.options[_this.selectedIndex].dataset.team_members), function(idx, val) {
+            $("#users_selector option[value='"+val+"']").attr("selected", "selected");
+        });
+        */
+        team_members = JSON.parse(_this.options[_this.selectedIndex].dataset.team_members);
+        $.each($('#users_selector').find($('option')), function(idx, val) {
+            console.log(String(val.value));
+            if (team_members.includes(parseInt(val.value))) {
+                val.selected = "selected";
+            } else {
+                val.selected = false;
+            }
+        });
+        /*
+        $.each($('#users_selector').find($('option')), function(idx, val) {
+            if (team_members.includes(val)) {
+                $("#users_selector option[value='"+val+"']").attr("selected", "selected");
+           } else {
+                $("#users_selector option[value='"+val+"']").attr("selected", false);
+           }
+        });
+        */
+     }
+
+     //http://microbuilder.io/blog/2016/01/10/plotting-json-data-with-chart-js.html
+      // Add a helper to format timestamp data
+      Date.prototype.formatMMDDYYYY = function() {
+          return (this.getMonth() + 1) +
+          "/" +  this.getDate() +
+          "/" +  this.getFullYear();
+       }
+    </script>
+
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <h4 class="to-print">Performance Indicator Show</h4>
+            </div>
+            <div class="col-1">
+                <button class='btn btn-default pull-right' id='tobottom-button' data-toggle='tooltip' title='Scroll to the bottom'><i class="fa fa-angle-double-down" aria-hidden="true"></i></button>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col">
+                <form method="GET">
+                    <div class="form-group">
+                        {% if teams_list %}<input type="radio" name="users_team_radio" checked onchange="checkMeUT('users')"> {% endif %}<label for="users_selector">Select user(s):</label>
+
+                        <select class="form-control" id="users_selector" multiple="multiple">
+                            {% for one_item in users_list %}
+                                <option value="{{ one_item.id }}" {% if forloop.first %}{{ 'selected="selected"' }}{% endif %}>
+                                {{ one_item.username }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+                        {% if teams_list %}
+                        <input type="radio" name="users_team_radio" onchange="checkMeUT('team')"> <label for="team_selector">Otherwise select a team:</label>
+                        <select class="form-control" id="team_selector" onclick="selectUsers(this)" onchange="selectUsers(this)">
+                            {% for one_item in teams_list %}
+                                <option value="{{ one_item.tid }}" data-team_members="{{ team_memebers_list|index:one_item.tid }}">
+                                {{ one_item.team_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        {% endif %}
+
+                        <label for="indicator_selector">Select Indicator:</label>
+                        <select class="form-control" id="indicator_selector">
+                            {% for one_item in indicators_list %}
+                                <option value="{{ one_item.piid }}">
+                                {{ one_item.indicator_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <label for="missions_selector">Select mission(s):</label>
+                        <select class="form-control" id="missions_selector" multiple="multiple">
+                            {% for one_item in missions_list %}
+                                <option value="{{ one_item.mid }}" {% if forloop.first %}{{ 'selected="selected"' }}{% endif %}>
+                                {{ one_item.mission_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <!--label for="component_selector">Select logging component (Task):</label>
+                        <select class="form-control" id="component_selector">
+                            {% for one_item in components_list %}
+                                <option value="{{ one_item.icid }}">
+                                {{ one_item.itrack_component_name }}
+                                </option>
+                            {% endfor %}
+                        </select-->
+
+
+                        <input type="radio" name="tasks_phase_radio" checked onchange="checkMeTP('tasks')"> <label for="tasks_selector">Select task(s):</label>
+                        <select class="form-control" id="tasks_selector" multiple="multiple">
+                            {% for one_item in tasks_list %}
+                                <option value="{{ one_item.taid }}" {% if forloop.first %}{{ 'selected="selected"' }}{% endif %}>
+                                {{ one_item.task_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <input type="radio" name="tasks_phase_radio" onchange="checkMeTP('phase')"> <label for="phase_selector">Otherwise select a phase:</label>
+                        <select class="form-control" id="phase_selector" onclick="selectTasks(this)" onchange="selectTasks(this)">
+                            {% for one_item in phases_list %}
+                                <option value="{{ one_item.pid }}" data-phase_tasks="{{ phase_tasks_list|index:one_item.pid }}">
+                                {{ one_item.phase_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+
+
+                        <!--span class="input-group date" data-date-format="dd.mm.yyyy"><label for="start_date">Start date:</label>
+                            <input  type="text" class="form-control" placeholder="dd.mm.yyyy" id="start_date">
+                                <div class="input-group-addon" >
+                                <span class="glyphicon glyphicon-th"></span>
+                            </div>
+                        </span>
+                        <span class="input-group date" data-date-format="dd.mm.yyyy"><label for="end_date">End date:</label>
+                            <input  type="text" class="form-control" placeholder="dd.mm.yyyy" id="end_date">
+                                <div class="input-group-addon" >
+                                <span class="glyphicon glyphicon-th"></span>
+                            </div>
+                        </span-->
+                        <!--span class="input-group date" data-date-format="dd.mm.yyyy"><label for="start_date">Start date:</label>
+                            <input  type="date" class="form-control" placeholder="dd.mm.yyyy" id="start_date">
+                        </span>
+                        <span class="input-group date" data-date-format="dd.mm.yyyy"><label for="end_date">End date:</label>
+                            <input  type="date" class="form-control" placeholder="dd.mm.yyyy" id="end_date">
+                        </span-->
+
+                        <!--span><label for="start_date">Start date:</label>
+                            <input class="form-control" type = 'date' id='start_date' name='start_date'></span>
+                        <span><label for="end_date">End date:</label>
+                            <input class="form-control" type = 'date' id='end_date' name='end_date'></span-->
+                    </div>
+                    <input type="button" class='btn btn-primary' value="Search" id="selection-button" method="GET">
+                </form>
+            </div>
+        </div>
+        <hr />
+        <div id="results_div" class="row to-print">
+            <div class="col">
+                <div id="nodata_div" style="width: 100%; text-align:center;">No data to show!</div>
+                <div id="comment_div_0" class="" style="width: 100%;"></div>
+                <div class="" style="width: 100%;">
+                    <div>
+                        <div style="float:right; width: 60%;">
+                            <div style="width: 80%; margin: auto;"><div id="legend_div" style="position: relative"></div></div>
+                            <div style="width: 100%; margin: auto;"><div id="figure"></div></div>
+                        </div>
+                        <span id="comment_div"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <hr />
+        <div class="row">
+            <div class="col">
+                <input type="button" class='btn btn-primary' value="Print" onclick="window.print();" id="print-button">
+            </div>
+            <div class="col-1">
+                <button class='btn btn-default pull-right' id='totop-button' data-toggle='tooltip' title='Scroll to the top'><i class="fa fa-angle-double-up" aria-hidden="true"></i></button>
+            </div>
+        </div>
+
+        <hr />
+
+    </div>
+
+    <script type="text/javascript">
+        var formatter = function (v, fmt) {
+            var format = fmt || 's';
+            if (v < 10 && /s$/.test(format)) {
+                format = '.1f';
+            }
+
+            return d3.format(format)(v).replace('G', 'B');
+        };
+
+        var safeParse = function (value, defaultValue) {
+            var val = +value;
+            return val === val ? val : defaultValue;
+        };
+
+        //fig_size=0.6*$(document).width();
+        //fig_size=0.6*$('.container').width()
+
+        /*var fig = new Contour({
+        		el: document.getElementById("figure"),
+			chart: {
+                //defaultWidth: 800,
+                //width: thisChartWidth,
+				padding: {
+					left: 50
+				}
+			},
+			xAxis: {
+				title: this.xAxisTitle,
+				ticks: safeParse(this.xTicks, undefined),
+				labels: {
+					format: _this._xLabelFormat || '.0d'
+				}
+			},
+			yAxis: {
+				title: this.yAxisTitle,
+				ticks: safeParse(this.yTicks, undefined),
+				nicing: false,
+				labels: {
+					formatter: function (v) {
+						return formatter(v, _this.yLabelFormat || _this.contourInstance.options.yAxis.labels.format)
+					}
+				}
+			},
+			legend:  {
+				el: document.getElementById("legend_div"),
+				direction: 'horizontal',
+				hAlign: 'right',
+				vAlign: 'top'
+			},
+			tooltip: {
+				formatter: function (d, name) {
+					//return d.x + '<br>' + formatter(d.y, _this.yLabelFormat || '.2s');
+                    //var name = _.result(_.find(runsNamesArray, {'name': d.series}), 'comment');
+
+                    return d.series + '<br>' + d.x + '<br>' + formatter(d.y, _this.yLabelFormat || '.2s');
+                    //return d.series + ': ' + d.x + ', ' d.y;
+				}
+			}
+		})
+		.cartesian().legend();*/
+
+        //https://stackoverflow.com/questions/6982692/html5-input-type-date-default-value-to-today/30788475
+        Date.prototype.toDateInputValue = (function(d) {
+            var local = new Date(this);
+            local.setMinutes(this.getMinutes() - this.getTimezoneOffset()-d*365.25*24*60);
+            return local.toJSON().slice(0,10);
+        });
+
+        $(document).ready( function() {
+            // Do this on $(document).ready(function() { ... })
+            $('#results_div').data('old-state', $('#results_div').html());
+
+            checkMeUT('users');
+            checkMeTP('tasks');
+            //$('.input-group.date').datepicker({format: "dd.mm.yyyy"});
+            $('#start_date').val(new Date().toDateInputValue(1));
+            $('#end_date').val(new Date().toDateInputValue(0));
+            //https://github.com/davidstutz/bootstrap-multiselect
+            /*$('#users_selector').multiselect({
+                maxHeight: 200,
+                buttonWidth: '400px',
+                enableClickableOptGroups: true,
+                enableCollapsibleOptGroups: true
+            });*/
+            /*
+            $('*').not('.to-print').addClass('no-print');
+            $('.to-print').find('*').removeClass('no-print');
+            $('.to-print').parentsUntil( $( 'html' ), '*').removeClass('no-print');
+            */
+        });
+
+        $( "#selection-button" ).click(function(event) {
+            event.preventDefault();
+
+            if (typeof fig != "undefined") {
+                delete fig;
+            }
+            // Restore element with a copy of divClone
+            $('#results_div').html($('#results_div').data('old-state'));
+
+            $('#pleaseWaitDialog').modal();
+
+            //fig.setData([]).render();
+            //fig.setData(0).render();
+            var users_selected = $('#users_selector').val();
+            //var team_selected = $('#team_selector').val();
+            var indicator_selected = $('#indicator_selector').val();
+            var missions_selected = $('#missions_selector').val();
+            //var component_selected = $('#component_selector').val();
+            var tasks_selected = $('#tasks_selector').val();
+            var start_date_selected = $('#start_date').val();
+            var end_date_selected = $('#end_date').val();
+
+            $.ajax({
+                 url: "{% url 'perform_ind_data' %}",
+                 method: 'GET',
+                 data : {
+                    'filter_users': String(users_selected),
+                    'filter_indicator': parseInt(indicator_selected),
+                    'filter_missions': String(missions_selected),
+                    /*'filter_component': parseInt(component_selected),
+                    'filter_start_date': start_date_selected,
+                    'filter_end_date': end_date_selected,*/
+                    'filter_tasks': String(tasks_selected)
+                 },
+                 success: function(data){
+                    $('#pleaseWaitDialog').modal('hide');
+                    console.log(data)
+
+                    $('#nodata_div').remove();
+                    $('#comment_div_0').html(data['general_comment']);
+                    $('#comment_div').html(data['perform_ind_txt']);
+
+                    /* data = [{"name":"ss03","data":[{"x":"2018-04-01 23:48","y":2},
+                    {"x":"2018-05-03 02:03","y":1},
+                    {"x":"2018-06-07 09:24","y":1},
+                    {"x":"2018-05-05 16:28","y":2}]}]*/
+
+                    for (i in data['perform_ind_data']){
+                        // data['perform_ind_data'][i] = {name: "ss03", data: Array(4)}
+                        for (j in data['perform_ind_data'][i].data){
+                            console.log(data['perform_ind_data'][i].data[j].x);
+                            data['perform_ind_data'][i].data[j].x = new Date(data['perform_ind_data'][i].data[j].x);
+                            data['perform_ind_data'][i].data[j].y = parseFloat(data['perform_ind_data'][i].data[j].y);
+                        }
+                        data['perform_ind_data'][i].data.sort(function(a, b){
+                            return a.x - b.x;
+                        })
+                    }
+
+                    /*var data3 = [];
+                    data3.push(data['perform_ind_data']);
+
+                    var data2 = [
+                        {name: 'Math', data: [{x: new Date('3/15/2014'), y: 170},{x: new Date('3/18/2014'), y: 170},{x: new Date('3/20/2014'), y: 149}]},
+                        {name: 'Economics', data: [{x: new Date('3/15/2014'), y: 220},{x: new Date('3/25/2014'), y: 130}]},
+                        {name: 'History', data: [{x: new Date('3/15/2014'), y: 103},{x: new Date('3/17/2014'), y: 103}]}
+                    ];*/
+
+                    var fig = new Contour({
+                            el: document.getElementById("figure"),
+                        chart: {
+                            //defaultWidth: 800,
+                            width: 0.6*$('.container').width(),
+                            padding: {
+                                left: 50,
+                                right: 50
+                            }
+                        },
+                        xAxis: {
+                            title: 'Date',
+                            type: 'linear',
+                            maxTicks: 3
+                        },
+                        yAxis: {
+                            title: $('#indicator_selector').find(":selected").text(),
+                            /*min: 0,*/
+                            /*ticks: safeParse(this.yTicks, undefined),*/
+                            smartAxis: true,
+                            labels: {
+                                formatter: function (v) {
+                                    return formatter(v, ".3s");
+                                }
+                            }
+                        },
+                        legend: {
+                            el: document.getElementById("legend_div"),
+                            direction: 'horizontal',
+                            hAlign: 'right',
+                            vAlign: 'top'
+                        }
+                    }).cartesian().scatter().legend().tooltip().trendLine();
+
+
+                    //fig.options.yAxis.title=$('#indicator_selector').find(":selected").text();
+                    fig.setData(data['perform_ind_data']).render();
+
+                    $('#legend_div').css({'position':'relative','top':'0px', 'right':'0px'});
+
+
+                 },
+                 error: function(xhr, errmsg, err){
+                     $('#pleaseWaitDialog').modal('hide');
+                     console.log("error");
+                     console.log(errmsg);
+                     console.log(err);
+                     //data=[];
+                     //data=[{"name":"","data":[{"x":new Date("2000-01-01T00:00:00.000Z"),"y":""}]}];
+                     /*data=[{"name":"","data":[{"x":new Date(Date.now()),"y":""}]}];
+                     fig.options.yAxis.title="Indicator"
+                     fig.setData(data).render();*/
+                 }
+            })
+        });
+
+
+    </script>
+{% endblock %}
